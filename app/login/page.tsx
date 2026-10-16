@@ -1,28 +1,46 @@
+
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useState, type FormEvent, Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, Check, Lock, Smartphone } from "lucide-react";
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000/api";
+const API =
+  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000/api";
 
-export default function LoginPage() {
+export default function Page() {
+  return (
+    <Suspense fallback={<div className="p-6">লোড হচ্ছে...</div>}>
+      <LoginPage />
+    </Suspense>
+  );
+}
+
+function LoginPage() {
   const router = useRouter();
-  const [identifier, setIdentifier] = useState("");
+  const params = useSearchParams();
+
+  const [identifier, setIdentifier] = useState(
+    params.get("phone") ?? ""
+  );
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Ager page e jabe, history na thakle splash e
+  const exists = params.get("exists") === "1";
+
   function goBack() {
-    if (window.history.length > 1) router.back();
-    else router.push("/");
+    if (window.history.length > 1) {
+      router.back();
+    } else {
+      router.push("/");
+    }
   }
 
-  async function handleSubmit(e: FormEvent) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
 
@@ -32,19 +50,34 @@ export default function LoginPage() {
     }
 
     setLoading(true);
+
     try {
-      // TODO: tomar server er login endpoint onujayi milao
       const res = await fetch(`${API}/auth/login`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         credentials: "include",
-        body: JSON.stringify({ identifier: identifier.trim(), password, remember }),
+        body: JSON.stringify({
+          identifier: identifier.trim(),
+          password,
+          remember,
+        }),
       });
+
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.message || "লগইন করা যায়নি");
+
+      if (!res.ok) {
+        throw new Error(data.message || "লগইন করা যায়নি");
+      }
+
       router.push("/home");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "কিছু একটা সমস্যা হয়েছে");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "কিছু একটা সমস্যা হয়েছে"
+      );
     } finally {
       setLoading(false);
     }
@@ -52,7 +85,6 @@ export default function LoginPage() {
 
   return (
     <main className="mx-auto min-h-dvh max-w-md bg-gradient-to-b from-white via-white to-[#e8f4ef] px-6 pb-10 pt-5">
-      {/* Back button */}
       <button
         type="button"
         onClick={goBack}
@@ -62,32 +94,41 @@ export default function LoginPage() {
         <ArrowLeft size={24} />
       </button>
 
-      {/* Logo */}
       <header className="flex flex-col items-center text-center">
         <Image
           src="/images/logo-emblem.png"
           alt="AgroBondhu logo"
-          width={100}
-          height={100}
+          width={200}
+          height={200}
           priority
           className="h-auto w-50"
         />
-        
       </header>
 
-      {/* Welcome */}
       <section className="mt-7">
-        <h2 className="text-2xl font-bold text-brand-900">স্বাগতম!</h2>
-        <p className="mt-1 text-[15px] text-muted">আপনার অ্যাকাউন্ট লগইন করুন</p>
+        <h2 className="text-2xl font-bold text-brand-900">
+          স্বাগতম!
+        </h2>
+        <p className="mt-1 text-[15px] text-muted">
+          আপনার অ্যাকাউন্ট লগইন করুন
+        </p>
       </section>
 
-      {/* Form */}
+      {exists && (
+        <p className="mt-4 rounded-lg bg-brand-50 px-3 py-2 text-sm text-brand-700">
+          এই নম্বরে আগেই অ্যাকাউন্ট আছে। অনুগ্রহ করে লগইন করুন।
+        </p>
+      )}
+
       <form onSubmit={handleSubmit} className="mt-5" noValidate>
         <label className="flex h-13 items-center gap-3 rounded-xl border border-line bg-white/80 px-4 py-3 shadow-sm focus-within:border-brand-600 focus-within:ring-2 focus-within:ring-brand-600/20">
-          <Smartphone size={22} className="shrink-0 text-brand-700" aria-hidden />
+          <Smartphone
+            size={22}
+            className="shrink-0 text-brand-700"
+            aria-hidden
+          />
           <input
             type="text"
-            inputMode="email"
             autoComplete="username"
             value={identifier}
             onChange={(e) => setIdentifier(e.target.value)}
@@ -98,7 +139,11 @@ export default function LoginPage() {
         </label>
 
         <label className="mt-4 flex h-13 items-center gap-3 rounded-xl border border-line bg-white/80 px-4 py-3 shadow-sm focus-within:border-brand-600 focus-within:ring-2 focus-within:ring-brand-600/20">
-          <Lock size={22} className="shrink-0 text-brand-700" aria-hidden />
+          <Lock
+            size={22}
+            className="shrink-0 text-brand-700"
+            aria-hidden
+          />
           <input
             type="password"
             autoComplete="current-password"
@@ -110,7 +155,6 @@ export default function LoginPage() {
           />
         </label>
 
-        {/* Remember + forgot */}
         <div className="mt-4 flex items-center justify-between">
           <label className="flex cursor-pointer items-center gap-2 text-[15px] text-ink">
             <input
@@ -120,23 +164,30 @@ export default function LoginPage() {
               className="peer sr-only"
             />
             <span className="flex h-6 w-6 items-center justify-center rounded-md border-2 border-brand-600 bg-white text-white peer-checked:bg-brand-600 peer-focus-visible:ring-2 peer-focus-visible:ring-brand-600/40">
-              {remember && <Check size={16} strokeWidth={3} aria-hidden />}
+              {remember && (
+                <Check size={16} strokeWidth={3} aria-hidden />
+              )}
             </span>
             আমাকে মনে রাখুন
           </label>
 
-          <Link href="/forgot-password" className="text-[15px] font-semibold text-brand-600">
+          <Link
+            href="/forgot-password"
+            className="text-[15px] font-semibold text-brand-600"
+          >
             ভুলে গেছেন?
           </Link>
         </div>
 
         {error && (
-          <p role="alert" className="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-expense">
+          <p
+            role="alert"
+            className="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-expense"
+          >
             {error}
           </p>
         )}
 
-        {/* Login button */}
         <button
           type="submit"
           disabled={loading}
@@ -146,29 +197,28 @@ export default function LoginPage() {
         </button>
       </form>
 
-      {/* Divider */}
       <div className="my-6 flex items-center gap-3 text-sm text-muted">
         <span className="h-px flex-1 bg-line" />
         অথবা
         <span className="h-px flex-1 bg-line" />
       </div>
 
-      {/* Social login */}
       <div className="grid grid-cols-2 gap-4">
         <button
           type="button"
           onClick={() => {
-            // TODO: Google login
+            // TODO: Google login integration
           }}
           className="flex h-13 items-center justify-center gap-2 rounded-xl border border-line bg-white py-3 text-[15px] font-medium text-ink shadow-sm active:bg-brand-50"
         >
           <GoogleIcon />
           Google
         </button>
+
         <button
           type="button"
           onClick={() => {
-            // TODO: Facebook login
+            // TODO: Facebook login integration
           }}
           className="flex h-13 items-center justify-center gap-2 rounded-xl border border-line bg-white py-3 text-[15px] font-medium text-ink shadow-sm active:bg-brand-50"
         >
@@ -177,10 +227,12 @@ export default function LoginPage() {
         </button>
       </div>
 
-      {/* Register link */}
       <p className="mt-10 text-center text-[15px] text-ink">
         নতুন অ্যাকাউন্ট?{" "}
-        <Link href="/register" className="font-semibold text-brand-600">
+        <Link
+          href="/register"
+          className="font-semibold text-brand-600"
+        >
           রেজিস্ট্রেশন করুন
         </Link>
       </p>
@@ -191,10 +243,22 @@ export default function LoginPage() {
 function GoogleIcon() {
   return (
     <svg width="22" height="22" viewBox="0 0 48 48" aria-hidden>
-      <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z" />
-      <path fill="#4285F4" d="M46.1 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.4c-.5 2.9-2.2 5.3-4.6 6.9l7.4 5.7c4.3-4 6.9-9.9 6.9-17.1z" />
-      <path fill="#FBBC05" d="M10.5 28.7c-.5-1.4-.8-3-.8-4.7s.3-3.2.8-4.7l-7.9-6.1C.9 16.5 0 20.1 0 24s.9 7.5 2.6 10.8l7.9-6.1z" />
-      <path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.4-5.7c-2.1 1.4-4.8 2.3-8.5 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z" />
+      <path
+        fill="#EA4335"
+        d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"
+      />
+      <path
+        fill="#4285F4"
+        d="M46.1 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.4c-.5 2.9-2.2 5.3-4.6 6.9l7.4 5.7c4.3-4 6.9-9.9 6.9-17.1z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M10.5 28.7c-.5-1.4-.8-3-.8-4.7s.3-3.2.8-4.7l-7.9-6.1C.9 16.5 0 20.1 0 24s.9 7.5 2.6 10.8l7.9-6.1z"
+      />
+      <path
+        fill="#34A853"
+        d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.4-5.7c-2.1 1.4-4.8 2.3-8.5 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"
+      />
     </svg>
   );
 }

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Hind_Siliguri } from "next/font/google";
 import "./globals.css";
+import BottomNav from "@/components/BottomNav";
 
 const bengali = Hind_Siliguri({
   subsets: ["bengali", "latin"],
@@ -24,6 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="bn" className={bengali.variable}>
       <body>{children}</body>
+      <BottomNav />
     </html>
   );
 }

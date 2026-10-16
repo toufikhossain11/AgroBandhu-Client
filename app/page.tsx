@@ -48,7 +48,7 @@ export default function SplashPage() {
         </p>
 
         <Link
-          href="/login"
+          href="/register"
           className="mt-5 flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-b from-brand-500 to-brand-700 text-lg font-semibold shadow-[0_8px_20px_rgba(20,102,58,0.45)] ring-1 ring-white/20 transition active:scale-[0.98]"
         >
           শুরু করুন
