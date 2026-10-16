@@ -29,7 +29,7 @@ const taka = (n: number) => `৳${n.toLocaleString("en-US")}`;
 export default function HomePage() {
   return (
 <main className="mx-auto min-h-dvh max-w-md bg-white pb-24 shadow-sm">      {/* Header */}
-      <header className="flex items-center justify-between bg-gradient-to-b from-brand-900 to-brand-700 px-4 pb-6 pt-8 text-white">
+      <header className="flex items-center justify-between bg-gradient-to-b from-brand-900 to-brand-700 px-4 pb-8 pt-8 text-white">
         <h1 className="min-w-0 truncate pr-3 text-xl font-bold">{user.name}</h1>
 
         <div className="flex shrink-0 items-center gap-3">
@@ -58,7 +58,7 @@ export default function HomePage() {
         </div>
       </header>
 
-      <div className="space-y-6 px-4 py-5">
+      <div className="relative z-3 -mt-3 bg-white space-y-6 px-4 py-5  rounded-t-2xl">
         {/* Ei masher sarongsho */}
         <section>
           <h2 className="mb-3 text-lg font-bold text-ink">এই মাসের সারাংশ</h2>

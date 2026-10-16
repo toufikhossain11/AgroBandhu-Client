@@ -2,6 +2,9 @@ import type { Metadata, Viewport } from "next";
 import { Hind_Siliguri } from "next/font/google";
 import "./globals.css";
 import BottomNav from "@/components/BottomNav";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
 const bengali = Hind_Siliguri({
   subsets: ["bengali", "latin"],
@@ -21,7 +24,9 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+    const session = await auth.api.getSession({ headers: await headers() });
+  if (!session) redirect("/login");
   return (
     <html lang="bn" className={bengali.variable}>
       <body>{children}</body>
